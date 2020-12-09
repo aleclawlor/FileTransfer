@@ -4,10 +4,10 @@ import java.util.ArrayList;
 
 // broker responsible for registering clients 
 // clients saved in the form of 
-public class Broker { 
-
+public class Broker{ 
+    
     static ArrayList<RegistryTriple> clientTriples = new ArrayList<RegistryTriple>();
-    public static void main(String[] args){
+    public static void main(String[] args) throws IOException{
 
         InetAddress address;
         int portNumber;
@@ -19,7 +19,7 @@ public class Broker {
         ServerSocket listener = null;
 
         try{
-            listener = new ServerSocket(portNumber, 0, address);
+            listener = new ServerSocket(portNumber, 2, address);
         }
 
         catch (IOException e) {
@@ -31,78 +31,27 @@ public class Broker {
 
         try{
 
-            // run a while loop to accept either registrations or queries from connected clients 
             while(true){
-                
-                // accept clientSocket1 and clientSocket2
-                Socket clientSocket1 = listener.accept();
-                System.out.println("Broker accepted connection to client 1");
 
-                Socket clientSocket2 = listener.accept();
-                System.out.println("Broker accepted connection to client 2");
+                Socket clientSocket = listener.accept();
+                System.out.println("Broker accepted new client");
+
+                BrokerClientThread clientHandlerThread = new BrokerClientThread(clientSocket, clientTriples);
+                Thread t = new Thread(clientHandlerThread);
+                t.start();
             }
         }
 
         catch(IOException e){
-            System.out.print("An error has occurred connecting to client sockets");
-        }
-    }
-
-    public static void sendResponseToClient(Socket clientSocket, ClientRequestData toClient) throws IOException{
-
-        try{
-
-            OutputStream os = clientSocket.getOutputStream();
-            ObjectOutput oos = new ObjectOutputStream(os);
-            oos.writeObject(toClient);
-
-        }
-
-        catch(EOFException e){
-            e.printStackTrace();
-            clientSocket.close();
-        }
-
-        catch(IOException e){
-            e.printStackTrace();
-            clientSocket.close();
-        }
-
-    }
-    
-    public ClientRequestData getRequestFromClient(Socket clientSocket) throws IOException{
-
-        // client transport and network info 
-        SocketAddress clientAddress = clientSocket.getRemoteSocketAddress();
-        int port = clientSocket.getPort();
-
-        // instantiate a ClientRequestData object 
-        ClientRequestData dataObject = null;
-
-        // read input from client that is accessing broker 
-        try{
-
-            InputStream is = clientSocket.getInputStream();
-            ObjectInputStream ois = new ObjectInputStream(is);
-            dataObject = (ClientRequestData) ois.readObject();
-
-        }
-
-        catch(ClassNotFoundException e){
             e.printStackTrace();
         }
 
-        catch(EOFException e){
+        catch(Exception e){
             e.printStackTrace();
-            clientSocket.close();
         }
 
-        catch(IOException e){
-            e.printStackTrace();
-            clientSocket.close()
-        }
-
-        return dataObject;
+        System.out.println("Closing broker socket");
+        listener.close();
 
     }
 
@@ -113,13 +62,11 @@ public class Broker {
         try{
             address = InetAddress.getLocalHost();
         }
-
+    
         catch(UnknownHostException e){
             System.out.println("Could not find local address");
         }
 
         return address;
-
     }
-
 }

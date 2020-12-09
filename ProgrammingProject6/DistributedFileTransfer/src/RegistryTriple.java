@@ -26,4 +26,8 @@ public class RegistryTriple {
         return this.fileName;
     }
 
+    public void print(){
+        System.out.println("{ " + IP + ", " + portNumber + ", " + fileName + " }");
+    }
+
 }

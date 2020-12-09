@@ -2,7 +2,6 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketAddress;
 
 public class PeerServer implements Runnable{
     
@@ -46,11 +45,14 @@ public class PeerServer implements Runnable{
                 ClientRequestData fromClient = getRequestDataFromClient(clientSocket);
                 String fileName = fromClient.getFileName().replaceAll(" ", "");
 
+                System.out.println("Peer is beginning to send file to requesting client ...");
+
                 // send file 
                 sendFileToClient(clientSocket, fileName);
 
                 System.out.println("(Peer thread interruption): File < " + fileName + " > successfully transferred to client: " + clientSocket.getInetAddress().getHostName() + ":" + clientSocket.getPort());
 
+                // close connection to peer 
                 clientSocket.close();
 
             }
@@ -63,6 +65,7 @@ public class PeerServer implements Runnable{
         catch(Exception e){
             e.printStackTrace();
         }
+
     }
 
     public static void sendFileToClient(Socket clientSocket, String fileName) throws IOException{
