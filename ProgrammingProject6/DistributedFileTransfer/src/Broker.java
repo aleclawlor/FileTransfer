@@ -1,12 +1,12 @@
 import java.io.*;
 import java.net.*;
-import java.util.ArrayList;
+import java.util.*;
 
 // broker responsible for registering clients 
 // clients saved in the form of 
 public class Broker{ 
     
-    static ArrayList<RegistryTriple> clientTriples = new ArrayList<RegistryTriple>();
+    static List<RegistryTriple> clientTriples = Collections.synchronizedList(new ArrayList<RegistryTriple>());
     public static void main(String[] args) throws IOException{
 
         InetAddress address;
@@ -42,12 +42,16 @@ public class Broker{
             }
         }
 
+        catch(SocketException e){
+            System.out.println("A socket has disconnected unexpectedly");
+        }
+
         catch(IOException e){
-            e.printStackTrace();
+            System.out.println("Socket crashed");
         }
 
         catch(Exception e){
-            e.printStackTrace();
+            System.out.println("An unexpected error has occured");
         }
 
         System.out.println("Closing broker socket");

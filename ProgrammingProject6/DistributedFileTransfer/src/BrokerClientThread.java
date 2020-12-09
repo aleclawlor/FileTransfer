@@ -3,14 +3,15 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class BrokerClientThread implements Runnable {
     
     static Socket clientSocket;
-    static ArrayList<RegistryTriple> clientTriples;
+    static List<RegistryTriple> clientTriples;
 
-    BrokerClientThread(Socket client, ArrayList<RegistryTriple> Triples){
+    BrokerClientThread(Socket client, List<RegistryTriple> Triples){
 
         clientSocket = client;
         clientTriples = Triples;
@@ -23,9 +24,6 @@ public class BrokerClientThread implements Runnable {
         System.out.println("New broker thread started, handling a new client");
 
         try{
-
-            // Socket clientSocket2 = listener.accept();
-            // System.out.println("Broker accepted connection to client 2");
 
             String userRequest, fileName;
             ClientRequestData responseToClient;
