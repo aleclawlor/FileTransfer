@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.*;
 
 // broker responsible for registering clients 
 // clients saved in the form of 
@@ -43,7 +44,7 @@ public class Broker{
 
                 BrokerClientThread clientHandlerThread = new BrokerClientThread(clientSocket, clientTriples);
                 Thread t = new Thread(clientHandlerThread);
-                // t.setDaemon(true);
+                t.setDaemon(true);
                 t.start();
             }
 
@@ -81,3 +82,4 @@ public class Broker{
         return address;
     }
 }
+
