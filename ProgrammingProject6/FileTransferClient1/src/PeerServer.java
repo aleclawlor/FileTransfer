@@ -38,16 +38,15 @@ public class PeerServer implements Runnable{
             // wait for attempts to connect by other clients
             while (true){
 
-                System.out.println("Peer waiting for connection");
 
                 Socket clientSocket = listener.accept();
-                System.out.println("(Peer thread interruption): Accepted connection from a client. Initiating download. This line would be removed in production.");
+                System.out.println("\n(Peer thread interruption): Accepted connection from a client. Initiating download. This line would be removed in production.");
 
                  // get the sent object from the client looking to access the file and read the file name 
                 ClientRequestData fromClient = getRequestDataFromClient(clientSocket);
                 String fileName = fromClient.getFileName().replaceAll(" ", "");
 
-                System.out.println("Peer is beginning to send file to requesting client ...");
+                System.out.println("(Peer thread interruption) Peer is beginning to send file to requesting client ...");
 
                 // send file size to client to use for downloading
                 int fileSize = getFileSize(fileName);
@@ -118,7 +117,7 @@ public class PeerServer implements Runnable{
 
             // close output streams and file input stream
             fis.close();
-            // dos.close();
+            dos.close();
 
         }
 

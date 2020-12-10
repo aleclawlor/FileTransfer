@@ -30,6 +30,7 @@ public class client {
         // create peer server and spawn new thread
         PeerServer peer = new PeerServer(IP, peerPortNumber);
         Thread t = new Thread(peer);
+        t.setDaemon(true);
         t.start();
 
         // create handshake to broker 
@@ -39,7 +40,9 @@ public class client {
         
         String request, fileName, messageFromBroker; 
         ClientRequestData requestData, retrieveData;
-
+        
+        System.out.println("Welcome to Awesome File Sharing With Friends. This app gives you the ability to register files to a broker or download files from other clients.");
+        	
         try{
             
             requestData = new ClientRequestData();
@@ -121,12 +124,11 @@ public class client {
                 else if(request.contains("q")){
 
                     System.out.println("Thanks for enjoying our service. Have a great day!");
-                    break; 
+                    socket.close();
+                    System.exit(0);
 
                 }
-            }
-
-            socket.close();
+            }            
         } 
 
         catch(Exception e){
