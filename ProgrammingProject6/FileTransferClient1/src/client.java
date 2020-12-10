@@ -1,6 +1,7 @@
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,7 +41,7 @@ public class client {
         ClientRequestData requestData, retrieveData;
 
         try{
-
+            
             requestData = new ClientRequestData();
 
             while(true){
@@ -126,9 +127,8 @@ public class client {
             }
 
             socket.close();
-
         } 
-        
+
         catch(Exception e){
             e.printStackTrace();
         }

@@ -1,4 +1,5 @@
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -51,7 +52,7 @@ public class client {
                 if(request.contains("r")){
 
                     System.out.println("\nFile name to register: ");
-                    fileName = input.nextLine();
+                    fileName = input.nextLine().replaceAll(" ", "");
 
                     requestData.setOption("r");
                     requestData.setFileName(fileName);
@@ -72,7 +73,7 @@ public class client {
                     requestData.setOption("g");
 
                     System.out.println("\nFile name to retrieve: ");
-                    fileName = input.nextLine();
+                    fileName = input.nextLine().replaceAll(" ", "");
                     requestData.setFileName(fileName);
 
                     sendDataToBroker(socket, requestData);
@@ -102,11 +103,16 @@ public class client {
                     // send a request to peer server letting it know you want to download
                     sendDataToPeer(peerConnection, retrieveData);
                     
-                    // save file from peer
-                    saveFileFromPeer(peerConnection, fileName, 65000);
+                    int fileSize = getFileSizeFromPeer(peerConnection);
+                    System.out.println(fileSize);
+
+                    // send an 'okay' to the server letting it know file size has been obtained successfully 
+                    sendDownloadReadyToPeer(peerConnection);
+
+                    saveFileFromPeer(peerConnection, fileName, fileSize);
                     System.out.println("File < " + fileName + " > saved successfully from peer");
 
-                    // close connection to peer server 
+                    // close connection to peer server
                     peerConnection.close();
 
                 }
@@ -114,11 +120,13 @@ public class client {
                 else if(request.contains("q")){
 
                     System.out.println("Thanks for enjoying our service. Have a great day!");
-
                     break; 
 
                 }
             }
+
+            socket.close();
+
         } 
         
         catch(Exception e){
@@ -130,6 +138,42 @@ public class client {
         socket.close();
 
     }   
+
+    public static void sendDownloadReadyToPeer(Socket peerConnection){
+
+        DataOutputStream out;
+
+        try{
+
+            out = new DataOutputStream(peerConnection.getOutputStream());
+            out.writeInt(1);
+
+        }
+
+        catch(IOException e){
+            e.printStackTrace();
+        }
+
+    }
+
+    public static int getFileSizeFromPeer(Socket peerConnection) throws IOException{
+
+        int size = 0;
+
+        try{
+            
+            DataInputStream dis = new DataInputStream(peerConnection.getInputStream());
+            size = dis.readInt();
+
+        }
+
+        catch(IOException e){
+            e.printStackTrace();
+        }
+
+        return size;
+
+    }
 
     public static void saveFileFromPeer(Socket peerConnection, String fileName, int fileSize) throws IOException{
 
@@ -176,14 +220,12 @@ public class client {
         catch(EOFException e){
 
             e.printStackTrace();
-            clientSocket.close();
 
         }
 
         catch(IOException e){
 
             e.printStackTrace();
-            clientSocket.close();
 
         }
     }
@@ -202,14 +244,12 @@ public class client {
         catch(EOFException e){
 
             e.printStackTrace();
-            clientSocket.close();
 
         }
 
         catch(IOException e){
 
             e.printStackTrace();
-            clientSocket.close();
 
         }
     }
@@ -235,14 +275,12 @@ public class client {
         catch(EOFException e){
 
             e.printStackTrace();
-            clientSocket.close();
 
         }
 
         catch(IOException e){
 
             e.printStackTrace();
-            clientSocket.close();
 
         }
 

@@ -18,7 +18,6 @@ public class BrokerClientThread implements Runnable {
 
     }
 
-    @Override
     public void run(){
 
         System.out.println("New broker thread started, handling a new client");
@@ -28,13 +27,15 @@ public class BrokerClientThread implements Runnable {
             String userRequest, fileName;
             ClientRequestData responseToClient;
 
-            while(true){
-                
+            while(true){                
+
                 ClientRequestData receiveFromClient = getRequestFromClient(clientSocket);
                 userRequest = receiveFromClient.getOption();
                 
                 // client wants to register a file
                 if(userRequest.contains("r")){
+
+                    System.out.println("Client: " + clientSocket + "in user requests (register)");
 
                     InetAddress IP = receiveFromClient.getAddress();
                     int port = receiveFromClient.getPort();
@@ -56,6 +57,8 @@ public class BrokerClientThread implements Runnable {
                 // client wants to get a file from another user
                 else if(userRequest.contains("g")){
 
+                    System.out.println("Client: " + clientSocket + "in user requests (get)");
+
                     fileName = receiveFromClient.getFileName();
                     RegistryTriple foundTriple;
 
@@ -76,7 +79,6 @@ public class BrokerClientThread implements Runnable {
                     InetAddress peerWithFileAddress = foundTriple.getIP();
                     int peerWithFilePort = foundTriple.getPortNumber();
 
-
                     // send the response data object back to the client telling them that the file has been successfully added to the register
                     responseToClient = receiveFromClient;
                     responseToClient.setMessage("A user has made that file public! Please standby for file download.");
@@ -89,6 +91,8 @@ public class BrokerClientThread implements Runnable {
 
                 // user wants to log of and quit program
                 else if(userRequest.contains("q")){
+
+                    System.out.println("Client: " + clientSocket + "in user requests (quit)");
 
                     System.out.println("Client chose to disconnect. Killing thread and closing client connection. ");
                     break;
@@ -130,12 +134,10 @@ public class BrokerClientThread implements Runnable {
 
         catch(EOFException e){
             e.printStackTrace();
-            clientSocket.close();
         }
 
         catch(IOException e){
             e.printStackTrace();
-            clientSocket.close();
         }
 
     }
@@ -160,12 +162,10 @@ public class BrokerClientThread implements Runnable {
 
         catch(EOFException e){
             e.printStackTrace();
-            clientSocket.close();
         }
 
         catch(IOException e){
             e.printStackTrace();
-            clientSocket.close();
         }
 
         return dataObject;
@@ -212,7 +212,7 @@ public class BrokerClientThread implements Runnable {
         for(i = 0; i < clientTriples.size(); i++){
 
             RegistryTriple curr = clientTriples.get(i);
-            if(curr.getFileName().contains(fileName)){
+            if(curr.getFileName().contains(fileName.replace(" ", ""))){
                 return curr;
             }
         }

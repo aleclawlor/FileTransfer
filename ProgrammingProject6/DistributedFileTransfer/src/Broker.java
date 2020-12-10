@@ -1,17 +1,22 @@
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 // broker responsible for registering clients 
 // clients saved in the form of 
 public class Broker{ 
     
-    static List<RegistryTriple> clientTriples = Collections.synchronizedList(new ArrayList<RegistryTriple>());
+    static List<RegistryTriple> clientTriples = new CopyOnWriteArrayList<RegistryTriple>();
+
     public static void main(String[] args) throws IOException{
 
         InetAddress address;
         int portNumber;
-        
+        Boolean listening = true;
+
         // assign IP and port # for server socket 
         address = getMyIPAddress();
         portNumber = 5000;
@@ -19,7 +24,7 @@ public class Broker{
         ServerSocket listener = null;
 
         try{
-            listener = new ServerSocket(portNumber, 2, address);
+            listener = new ServerSocket(portNumber, 50, address);
         }
 
         catch (IOException e) {
@@ -31,15 +36,20 @@ public class Broker{
 
         try{
 
-            while(true){
+            while(listening){
 
                 Socket clientSocket = listener.accept();
                 System.out.println("Broker accepted new client");
 
                 BrokerClientThread clientHandlerThread = new BrokerClientThread(clientSocket, clientTriples);
                 Thread t = new Thread(clientHandlerThread);
+                // t.setDaemon(true);
                 t.start();
             }
+
+            System.out.println("Closing broker socket");
+            listener.close();
+
         }
 
         catch(SocketException e){
@@ -53,9 +63,6 @@ public class Broker{
         catch(Exception e){
             System.out.println("An unexpected error has occured");
         }
-
-        System.out.println("Closing broker socket");
-        listener.close();
 
     }
 

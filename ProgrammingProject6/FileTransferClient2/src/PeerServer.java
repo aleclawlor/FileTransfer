@@ -24,7 +24,7 @@ public class PeerServer implements Runnable{
         ServerSocket listener = null;
 
         try{
-            listener = new ServerSocket(portNumber, 2, address);
+            listener = new ServerSocket(portNumber, 50, address);
         }
 
         catch (IOException e) {
@@ -38,6 +38,8 @@ public class PeerServer implements Runnable{
             // wait for attempts to connect by other clients
             while (true){
 
+                System.out.println("Peer waiting for connection");
+
                 Socket clientSocket = listener.accept();
                 System.out.println("(Peer thread interruption): Accepted connection from a client. Initiating download. This line would be removed in production.");
 
@@ -47,13 +49,20 @@ public class PeerServer implements Runnable{
 
                 System.out.println("Peer is beginning to send file to requesting client ...");
 
+                // send file size to client to use for downloading
+                int fileSize = getFileSize(fileName);
+                sendFileSize(clientSocket, fileSize);
+
+                // wait until the user receives the file size before sending the file
+                int userReadyToDownload = getDownloadReadyFromClient(clientSocket);
+                
                 // send file 
                 sendFileToClient(clientSocket, fileName);
 
-                System.out.println("(Peer thread interruption): File < " + fileName + " > successfully transferred to client: " + clientSocket.getInetAddress().getHostName() + ":" + clientSocket.getPort());
+                System.out.println("(Peer thread interruption): File < " + fileName + " > successfully transferred to client: " + clientSocket.getInetAddress().getHostName() + ":" + clientSocket.getLocalPort());
 
-                // close connection to peer 
-                clientSocket.close();
+                // // close connection to peer 
+                // clientSocket.close();
 
             }
         }   
@@ -68,14 +77,43 @@ public class PeerServer implements Runnable{
 
     }
 
-    public static void sendFileToClient(Socket clientSocket, String fileName) throws IOException{
+    public static int getFileSize(String fileName){
 
-        int fileSize;
+        int size = 0;
+
+        try{
+            size = (int) new File("./src/" + fileName).length();
+        }
+
+        catch(Exception e){
+            System.out.println("There was a problem getting the file size");
+        }
+
+        return size;
+
+    }
+
+    public static void sendFileSize(Socket clientSocket, int fileSize){
+
+        DataOutputStream out;
 
         try{
 
-            // temporarily hardcoded file size
-            fileSize = 6022386;
+            out = new DataOutputStream(clientSocket.getOutputStream());
+            out.writeInt(fileSize);
+
+            // out.close();
+
+        }
+
+        catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    public static void sendFileToClient(Socket clientSocket, String fileName) throws IOException{
+
+        try{
 
             DataOutputStream dos = new DataOutputStream(clientSocket.getOutputStream());
             FileInputStream fis = new FileInputStream("./src/" + fileName);
@@ -86,20 +124,38 @@ public class PeerServer implements Runnable{
             }
 
             // close output streams and file input stream
-            fis.close();
-            dos.close();
+            // fis.close();
+            // dos.close();
 
         }
 
         catch(EOFException e){
+            System.out.println("EOF exception occurred");
             e.printStackTrace();
-            clientSocket.close();
         }
 
         catch(IOException e){
             e.printStackTrace();
-            clientSocket.close();
         }
+
+    }
+
+    public static int getDownloadReadyFromClient(Socket clientSocket){
+
+        int status = 0;
+
+        try{
+
+            DataInputStream dis = new DataInputStream(clientSocket.getInputStream());
+            status = dis.readInt();
+            status = 1;
+        }
+        
+        catch(IOException e){
+            e.printStackTrace();
+        }
+
+        return status;
 
     }
 
@@ -123,12 +179,10 @@ public class PeerServer implements Runnable{
 
         catch(EOFException e){
             e.printStackTrace();
-            clientSocket.close();
         }
 
         catch(IOException e){
             e.printStackTrace();
-            clientSocket.close();
         }
 
         return dataObject;
