@@ -13,14 +13,16 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Scanner;
 
+//Disclaimer: File transfer over sockets based off of this source: https://gist.github.com/CarlEkerot/2693246
+
 public class client {
    
     static String name; 
     static InetAddress IP; 
     static int peerPortNumber; 
-
+    
     public static void main(String[] args) throws Exception{
-
+    	
         Scanner input = new Scanner(System.in);
         Socket socket; 
 
@@ -30,11 +32,11 @@ public class client {
         // create peer server and spawn new thread
         PeerServer peer = new PeerServer(IP, peerPortNumber);
         Thread t = new Thread(peer);
-        t.setDaemon(true);
         t.start();
 
         // create handshake to broker 
         socket = new Socket(IP, 5000);
+        System.out.println("Socket: " + socket);
 
         System.out.println(IP);
         
@@ -48,7 +50,9 @@ public class client {
             requestData = new ClientRequestData();
 
             while(true){
-
+            	
+            	System.out.println("Socket: " + socket);
+            	
                 System.out.println("\nChoose an option: (r) register a file to db, (g) get a file, (q) quit/log off");
                 request = input.nextLine().toLowerCase();
 
@@ -92,6 +96,14 @@ public class client {
                         continue;
 
                     }
+                    
+                    // client requests a file that it already owns
+                    if(retrieveData.getPort() == peerPortNumber) {
+                    	
+                    	System.out.println("\nYou already own this file! ");
+                    	continue;
+                    	
+                    }
 
                     messageFromBroker = retrieveData.getMessage();
                     System.out.println("From broker: " + messageFromBroker);
@@ -123,7 +135,7 @@ public class client {
 
                 else if(request.contains("q")){
 
-                    System.out.println("Thanks for enjoying our service. Have a great day!");
+                    System.out.println("\nThanks for enjoying our service. Have a great day!");
                     socket.close();
                     System.exit(0);
 
@@ -197,7 +209,6 @@ public class client {
             }
 
             fos.close();
-            dis.close();
 
         }
 
